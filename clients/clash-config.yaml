@@ -1,0 +1,55 @@
+# Clash Meta configuration template.
+# Replace every angle-bracket placeholder with values exported by X-UI.
+
+port: 7890
+socks-port: 7891
+redir-port: 7892
+allow-lan: false
+bind-address: 127.0.0.1
+mode: rule
+log-level: info
+external-controller: ''
+
+dns:
+  enable: true
+  listen: 127.0.0.1:53
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  nameserver:
+    - 1.1.1.1
+    - 9.9.9.9
+  fallback:
+    - tls://1.1.1.1
+    - tls://9.9.9.9
+
+proxies:
+  - name: self-hosted-vless
+    type: vless
+    server: <SERVER_IP_OR_HOSTNAME>
+    port: 443
+    uuid: <CLIENT_UUID>
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: www.cloudflare.com
+    reality-opts:
+      public-key: <REALITY_PUBLIC_KEY>
+      short-id: <REALITY_SHORT_ID>
+    client-fingerprint: chrome
+
+proxy-groups:
+  - name: proxy-select
+    type: select
+    proxies:
+      - self-hosted-vless
+      - DIRECT
+
+rules:
+  - DOMAIN-SUFFIX,cn,DIRECT
+  - GEOIP,CN,DIRECT
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - MATCH,proxy-select

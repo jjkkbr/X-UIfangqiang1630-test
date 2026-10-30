@@ -1,0 +1,40 @@
+# Runtime state and generated data
+db/
+cert/
+backups/
+logs/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+secrets/
+
+# Generated client material
+clients/generated/
+clients/*.conf
+clients/*.json
+clients/*-qr.*
+
+# Editor and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/

@@ -1,0 +1,21 @@
+name: quality
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  offline-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check shell syntax
+        shell: bash
+        run: for file in scripts/*.sh; do bash -n "$file"; done
+
+      - name: Run isolated regression tests
+        run: python3 tests/test_scripts.py
+
+      - name: Parse JSON templates
+        run: python3 -c 'import json; json.load(open("configs/xray-template.json"))'
