@@ -158,10 +158,16 @@ curl http://localhost:54321
 #### Step 1: 验证节点参数
 
 从 X-UI 面板重新复制分享链接，确认：
+- 节点地址为服务器公网 IP 或域名，而非 SSH 面板隧道的 `127.0.0.1`
 - UUID 正确
 - Flow 为 `xtls-rprx-vision`
-- Public Key 与面板一致
+- Public Key 非空且与面板一致，不能使用 Private Key 替代
+- Short ID 与服务端允许值一致
 - SNI 域名正确（如 `www.cloudflare.com`）
+
+`PublicKey 属性无效` 表示客户端公钥缺失或格式无效，属于本地配置校验失败。先重新复制与服务端私钥配对的 Reality 公钥，再测试网络。通过 SSH 隧道访问面板时，默认分享地址可能是 `127.0.0.1`；在入站 **外部代理** 页设置公网导出地址，或导入后修改客户端地址。
+
+如 **Get New Cert** 显示 `AxiosError: Network Error`，先确认 SSH 隧道仍在运行并重新登录面板，再检查开发者工具中的 `/server/getNewX25519Cert` 请求。该提示本身不证明 Reality 算法或 Xray 版本不兼容。已确认的容器内二进制可执行 `docker exec x-ui /app/bin/xray-linux-amd64 x25519`，输出包含私钥，只在受保护的本地终端查看，不要复制进日志或 Issue。
 
 #### Step 2: 测试服务器端口
 
@@ -174,6 +180,16 @@ nmap -p 443 <服务器IP>
 ```
 
 如端口不通，检查服务器防火墙。
+
+TCP 端口可达后，还应使用已启动的客户端实际测试：
+
+```powershell
+curl.exe --proxy socks5h://127.0.0.1:10808 --connect-timeout 10 --max-time 20 https://www.cloudflare.com/cdn-cgi/trace
+```
+
+请求成功后检查响应中的 `ip=` 是否为服务器实际出口 IP。客户端分流规则可能把测试请求设为直连；必要时临时选择全局代理路由后重试。仅返回 HTTP 200 不能单独证明流量经过该节点。
+
+显式代理测试成功但浏览器仍直连时，检查系统代理是否启用，以及是否被另一个代理客户端覆盖。
 
 #### Step 3: 检查 Reality 配置
 
